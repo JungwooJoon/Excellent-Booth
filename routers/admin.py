@@ -85,7 +85,8 @@ async def create_booth(request: Request, name: str = Form(...), location: str = 
     new_booth = Booth(name=name, location=location, description=description)
     await new_booth.insert()
 
-    domain_url = str(request.base_url).rstrip("/")
+    # domain_url에 /booth를 포함시켜 QR이 올바른 경로를 가리키도록 함
+    domain_url = str(request.base_url).rstrip("/") + "/booth"
 
     # QR 생성 (qr_service.py에 generate_booth_qr 함수가 있어야 함)
     qr_path = generate_booth_qr(new_booth.booth_id, name, domain_url)

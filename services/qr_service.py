@@ -80,5 +80,5 @@ def generate_booth_qr(booth_id: UUID, booth_name: str, domain_url: str):
     file_path = os.path.join(QR_PATH, f"{booth_id}.png")
     new_img.save(file_path)
 
-    # 웹에서 접근 가능한 경로 반환
-    return f"/static/qrcodes/{booth_id}.png"
+    # 웹에서 접근 가능한 경로 반환 (/booth 서브경로 포함)
+    return f"/booth/static/qrcodes/{booth_id}.png"
