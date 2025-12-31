@@ -6,12 +6,21 @@ import pandas as pd
 from io import BytesIO
 from services.qr_service import generate_booth_qr
 from uuid import UUID
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 router = APIRouter(prefix="/booth", tags=["booth"])
 templates = Jinja2Templates(directory="templates")
 
-ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD = "dmubestbooth3#"
+
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
+
+if not ADMIN_USERNAME:
+    print("env에 계정 정보가 없습니다.")
+
 COOKIE_KEY = "admin_session"
 COOKIE_VALUE = "valid_admin"
 

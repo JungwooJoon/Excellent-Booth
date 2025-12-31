@@ -19,7 +19,7 @@ def generate_booth_qr(booth_id: UUID, booth_name: str, domain_url: str):
 
         # 1. 실제 접속할 URL 생성
     domain_url = domain_url.rstrip("/")
-    target_url = f"{domain_url}/entry/{booth_id}"
+    target_url = f"{domain_url}/booth/entry/{booth_id}"
 
     # 2. QR 코드 객체 생성
     qr = qrcode.QRCode(

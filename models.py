@@ -1,4 +1,3 @@
-# models.py
 from typing import Optional
 from uuid import UUID, uuid4
 from typing import Annotated

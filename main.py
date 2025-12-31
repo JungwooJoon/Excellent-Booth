@@ -5,6 +5,7 @@ from fastapi.responses import RedirectResponse
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 import os
+
 from database import init_db
 from routers import user, admin, analysis
 
@@ -27,6 +28,8 @@ async def lifespan(app: FastAPI):
 
 origins = [
     "http://localhost",
+    "http://0.0.0.0",
+    "http://0.0.0.0:8000",
     "http://localhost:3000", # 리액트 등 프론트엔드 포트
     "http://127.0.0.1:8000",
     "https://campuslife.dongyang.ac.kr",
