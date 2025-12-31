@@ -1,0 +1,589 @@
+{% extends "base.html" %}
+
+{% block title %}취업캠프 역량 분석기{% endblock %}
+
+{% block main_style %}
+max-width: none;
+padding: 0;
+margin: 0;
+width: 100%;
+{% endblock %}
+
+{% block head %}
+<style>
+    /* 전체 레이아웃 (사이드바 + 콘텐츠) */
+    .analysis-container {
+        display: flex;
+        min-height: calc(100vh - 60px); /* 헤더 높이 제외 */
+        background-color: #f5f7fa;
+    }
+
+    /* 1. 사이드바 스타일 */
+    .sidebar {
+        width: 280px;
+        background-color: white;
+        border-right: 1px solid #e1e4e8;
+        padding: 30px 20px;
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+    }
+
+    .sidebar-title {
+        font-size: 18px;
+        font-weight: 800;
+        color: #333;
+        margin-bottom: 30px;
+        padding-left: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .menu-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 15px 20px;
+        margin-bottom: 8px;
+        border-radius: 10px;
+        color: #666;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.2s;
+        cursor: pointer;
+        font-size: 15px;
+    }
+
+    .menu-item:hover {
+        background-color: #f8f9fa;
+        color: #333;
+    }
+
+    /* 활성화된 메뉴 스타일 */
+    .menu-item.active {
+        background-color: #e3f2fd;
+        color: #005eb8;
+    }
+
+    .menu-item.active i {
+        color: #005eb8;
+    }
+
+    /* 구분선 */
+    .divider {
+        height: 1px;
+        background-color: #eee;
+        margin: 20px 0;
+    }
+
+    /* 2. 메인 콘텐츠 영역 스타일 */
+    .main-content {
+        flex: 1;
+        padding: 40px;
+        overflow-y: auto;
+    }
+
+    .content-header {
+        margin-bottom: 30px;
+    }
+
+    .content-header h1 {
+        margin: 0 0 10px 0;
+        font-size: 24px;
+        color: #333;
+    }
+
+    .content-header p {
+        color: #666;
+        margin: 0;
+    }
+
+    /* 카드 스타일 */
+    .work-card {
+        background: white;
+        padding: 40px;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.03);
+        border: 1px solid #eee;
+        max-width: 800px;
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* 폼 스타일 */
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 700;
+        color: #444;
+    }
+
+    .file-input-box {
+        padding: 20px;
+        border: 2px dashed #ddd;
+        border-radius: 10px;
+        background: #fafafa;
+        text-align: center;
+        transition: 0.2s;
+    }
+
+    .file-input-box:hover {
+        border-color: #aaa;
+        background: #f0f0f0;
+    }
+
+    .file-input {
+        width: 100%;
+        cursor: pointer;
+    }
+
+    .action-btn {
+        width: 100%;
+        padding: 16px;
+        border: none;
+        border-radius: 8px;
+        font-weight: bold;
+        font-size: 16px;
+        cursor: pointer;
+        transition: 0.2s;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-blue {
+        background-color: #005eb8;
+        color: white;
+    }
+
+    .btn-blue:hover {
+        background-color: #004a94;
+    }
+
+    .btn-orange {
+        background-color: #e65100;
+        color: white;
+    }
+
+    .btn-orange:hover {
+        background-color: #bf360c;
+    }
+
+    /* 숨김 처리용 클래스 */
+    .hidden {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="analysis-container">
+
+    <aside class="sidebar">
+        <div class="sidebar-title">
+            <i class="fas fa-chart-pie" style="color: #6f42c1;"></i> 역량 분석 도구
+        </div>
+
+        <div class="menu-item active" onclick="switchTab('step1', this)">
+            <i class="fas fa-calculator" style="width: 20px;"></i>
+            <span>Step 1. 평균 계산</span>
+        </div>
+
+        <div class="menu-item" onclick="switchTab('step2', this)">
+            <i class="fas fa-file-invoice" style="width: 20px;"></i>
+            <span>Step 2. 리포트 생성</span>
+        </div>
+
+        <div class="divider"></div>
+
+        <a href="/admin" class="menu-item">
+            <i class="fas fa-arrow-left" style="width: 20px;"></i>
+            <span>관리자 홈으로</span>
+        </a>
+    </aside>
+
+    <main class="main-content">
+
+        <div id="step1-content">
+            <div class="content-header">
+                <h1>타인 평가 평균 계산</h1>
+                <p>여러 명의 동료가 평가한 Raw Data를 업로드하면 절사 평균을 계산합니다.</p>
+            </div>
+
+            <div class="work-card">
+                <form id="step1Form" onsubmit="handleStep1Preview(event)">
+                    <div class="form-group">
+                        <label class="form-label">평가 원본 파일 (.xlsx)</label>
+                        <div class="file-input-box">
+                            <input type="file" id="step1FileInput" name="file" accept=".xlsx" required
+                                   class="file-input">
+                        </div>
+                        <p style="font-size: 12px; color: #888; margin-top: 8px;">
+                            * 이름, 학번, 평가항목 순서로 구성된 엑셀 파일
+                        </p>
+                    </div>
+
+                    <button type="submit" id="btnStep1Calc" class="action-btn btn-blue">
+                        계산하기
+                    </button>
+                </form>
+
+                <div id="resultArea"
+                     style="display: none; margin-top: 40px; border-top: 2px dashed #eee; padding-top: 30px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 style="margin: 0; color: #333; font-size: 18px;">계산 결과</h3>
+
+                        <button type="button" onclick="handleStep1Download()" class="action-btn btn-orange"
+                                style="width: auto; padding: 10px 20px; font-size: 14px;">
+                            <i class="fas fa-file-excel"></i> 엑셀 다운로드
+                        </button>
+                    </div>
+
+                    <div style="overflow-x: auto; border: 1px solid #ddd; border-radius: 8px;">
+                        <table id="previewTable"
+                               style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: center;">
+                            <thead style="background-color: #f8f9fa; color: #333;">
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="step2-content" class="hidden">
+            <div class="content-header">
+                <h1>최종 리포트 생성</h1>
+                <p>개인별 방사형 차트가 포함된 최종 결과 보고서를 생성합니다.</p>
+            </div>
+
+            <div class="work-card">
+                <form id="step2Form" onsubmit="handleStep2Preview(event)">
+                    <div class="form-group">
+                        <label class="form-label">1. 내가 보는 나 (.xlsx)</label>
+                        <div class="file-input-box">
+                            <input type="file" id="step2FileMy" name="my_file" accept=".xlsx" required
+                                   class="file-input">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">2. 남이 보는 나 (평균) (.xlsx)</label>
+                        <div class="file-input-box">
+                            <input type="file" id="step2FileOthers" name="others_file" accept=".xlsx" required
+                                   class="file-input">
+                        </div>
+                        <p style="font-size: 12px; color: #888; margin-top: 8px;">
+                            * Step 1에서 계산된 결과 파일을 사용하세요.
+                        </p>
+                    </div>
+
+                    <button type="submit" id="btnStep2Preview" class="action-btn btn-orange">
+                        데이터 병합
+                    </button>
+                </form>
+
+                <div id="resultArea2"
+                     style="display: none; margin-top: 40px; border-top: 2px dashed #eee; padding-top: 30px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 style="margin: 0; color: #333; font-size: 18px;">병합 데이터</h3>
+
+                        <button type="button" onclick="handleStep2Download()" class="action-btn btn-blue"
+                                style="width: auto; padding: 10px 20px; font-size: 14px;">
+                            <i class="fas fa-file-invoice"></i> 리포트(차트 포함) 다운로드
+                        </button>
+                    </div>
+
+                    <p style="font-size: 13px; color: #666; margin-bottom: 10px;">
+                        * 아래 표는 데이터 병합 결과입니다. <b>다운로드 버튼을 누르면 방사형 차트가 포함된 엑셀 파일이 생성됩니다.</b>
+                    </p>
+
+                    <div style="overflow-x: auto; border: 1px solid #ddd; border-radius: 8px; max-height: 500px;">
+                        <table id="previewTable2"
+                               style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: center; white-space: nowrap;">
+                            <thead style="background-color: #fff3e0; color: #e65100; position: sticky; top: 0;">
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<div id="loadingIndicator"
+     style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; text-align: center;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+        <i class="fas fa-spinner fa-spin" style="font-size: 40px; color: #005eb8; margin-bottom: 20px;"></i>
+        <h3 style="margin: 0; color: #333;">작업 중입니다...</h3>
+        <p style="margin: 10px 0 0 0; color: #666;">잠시만 기다려주세요.</p>
+    </div>
+</div>
+
+<script>
+    // 탭 전환 함수
+    function switchTab(tabName, clickedElement) {
+        // 1. 모든 탭 컨텐츠 숨기기
+        document.getElementById('step1-content').classList.add('hidden');
+        document.getElementById('step2-content').classList.add('hidden');
+
+        // 2. 선택한 탭 컨텐츠 보이기
+        document.getElementById(tabName + '-content').classList.remove('hidden');
+
+        // 3. 사이드바 활성화 상태 변경
+        // 모든 메뉴 아이템에서 active 제거
+        const menuItems = document.querySelectorAll('.menu-item');
+        menuItems.forEach(item => item.classList.remove('active'));
+
+        // 클릭된 요소에 active 추가
+        clickedElement.classList.add('active');
+    }
+
+    // Step 1 처리 로직
+    async function handleStep1Preview(event) {
+        event.preventDefault();
+
+        const fileInput = document.getElementById("step1FileInput");
+        if (fileInput.files.length === 0) return;
+
+        const formData = new FormData();
+        formData.append("file", fileInput.files[0]);
+
+        const btn = document.getElementById("btnStep1Calc");
+        const loading = document.getElementById("loadingIndicator");
+        const resultArea = document.getElementById("resultArea");
+
+        btn.disabled = true;
+        loading.style.display = "block";
+        resultArea.style.display = "none"; // 기존 결과 숨김
+
+        try {
+            const response = await fetch('/analysis/calc-average/preview', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const data = await response.json(); // JSON 데이터 받기 {columns: [], data: []}
+                renderTable(data); // 테이블 그리기 함수 호출
+                resultArea.style.display = "block"; // 결과 영역 표시
+            } else {
+                const err = await response.json();
+                alert("오류: " + (err.detail || "계산 중 오류가 발생했습니다."));
+            }
+        } catch (error) {
+            console.error(error);
+            alert("서버 통신 오류");
+        } finally {
+            btn.disabled = false;
+            loading.style.display = "none";
+        }
+    }
+
+    // [Step 1] 다운로드 (엑셀 요청)
+    async function handleStep1Download() {
+        const fileInput = document.getElementById("step1FileInput");
+        if (fileInput.files.length === 0) {
+            alert("파일을 다시 선택해주세요.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", fileInput.files[0]);
+
+        const loading = document.getElementById("loadingIndicator");
+        loading.style.display = "block";
+
+        try {
+            const response = await fetch('/analysis/calc-average/download', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                downloadFile(response, "평균결과.xlsx");
+            } else {
+                alert("다운로드 중 오류가 발생했습니다.");
+            }
+        } catch (error) {
+            alert("서버 통신 오류");
+        } finally {
+            loading.style.display = "none";
+        }
+    }
+
+    // [Helper] 테이블 렌더링 함수
+    function renderTable(jsonData) {
+        const table = document.getElementById("previewTable");
+        const thead = table.querySelector("thead");
+        const tbody = table.querySelector("tbody");
+
+        // 초기화
+        thead.innerHTML = "";
+        tbody.innerHTML = "";
+
+        // 1. 헤더 생성
+        let headerRow = "<tr>";
+        jsonData.columns.forEach(col => {
+            headerRow += `<th style="padding: 12px; border-bottom: 2px solid #ddd; white-space: nowrap;">${col}</th>`;
+        });
+        headerRow += "</tr>";
+        thead.innerHTML = headerRow;
+
+        // 2. 데이터 생성
+        jsonData.data.forEach(row => {
+            let tr = "<tr>";
+            row.forEach(cell => {
+                tr += `<td style="padding: 10px; border-bottom: 1px solid #eee;">${cell}</td>`;
+            });
+            tr += "</tr>";
+            tbody.innerHTML += tr;
+        });
+    }
+
+    // Step 2 처리 로직
+    async function handleStep2Preview(event) {
+        event.preventDefault();
+
+        const fileMy = document.getElementById("step2FileMy");
+        const fileOthers = document.getElementById("step2FileOthers");
+
+        if(fileMy.files.length === 0 || fileOthers.files.length === 0) return;
+
+        const formData = new FormData();
+        formData.append("my_file", fileMy.files[0]);
+        formData.append("others_file", fileOthers.files[0]);
+
+        const btn = document.getElementById("btnStep2Preview");
+        const loading = document.getElementById("loadingIndicator");
+        const resultArea = document.getElementById("resultArea2");
+
+        btn.disabled = true;
+        loading.style.display = "block";
+        resultArea.style.display = "none"; // 기존 결과 숨김
+
+        try {
+            const response = await fetch('/analysis/generate-report/preview', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                renderTable2(data); // Step 2 전용 테이블 렌더링
+                resultArea.style.display = "block"; // 결과 표시
+            } else {
+                const err = await response.json();
+                alert("오류: " + (err.detail || "병합 중 오류 발생"));
+            }
+        } catch (error) {
+            console.error(error);
+            alert("서버 통신 오류");
+        } finally {
+            btn.disabled = false;
+            loading.style.display = "none";
+        }
+    }
+
+    // [Step 2] 다운로드 (차트 생성 및 엑셀 요청)
+    async function handleStep2Download() {
+        const fileMy = document.getElementById("step2FileMy");
+        const fileOthers = document.getElementById("step2FileOthers");
+
+        if(fileMy.files.length === 0 || fileOthers.files.length === 0) {
+            alert("파일을 다시 선택해주세요.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("my_file", fileMy.files[0]);
+        formData.append("others_file", fileOthers.files[0]);
+
+        const loading = document.getElementById("loadingIndicator");
+        // 로딩 문구 변경 (사용자 안심시키기)
+        const loadingText = loading.querySelector("h3");
+        const originalText = loadingText.innerText;
+        loadingText.innerText = "차트 생성 중... (시간이 조금 걸립니다)";
+
+        loading.style.display = "block";
+
+        try {
+            const response = await fetch('/analysis/generate-report/download', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                downloadFile(response, "역량분석리포트.xlsx");
+            } else {
+                alert("리포트 생성 실패. 데이터 형식을 확인해주세요.");
+            }
+        } catch (error) {
+            alert("서버 통신 오류");
+        } finally {
+            loading.style.display = "none";
+            loadingText.innerText = originalText; // 문구 원상복구
+        }
+    }
+
+    // [Helper] Step 2 테이블 렌더링 (헤더 색상을 주황색으로 하여 1단계와 구분)
+    function renderTable2(jsonData) {
+        const table = document.getElementById("previewTable2");
+        const thead = table.querySelector("thead");
+        const tbody = table.querySelector("tbody");
+
+        thead.innerHTML = "";
+        tbody.innerHTML = "";
+
+        // 헤더 생성
+        let headerRow = "<tr>";
+        jsonData.columns.forEach(col => {
+            headerRow += `<th style="padding: 12px; border-bottom: 2px solid #ffcc80;">${col}</th>`;
+        });
+        headerRow += "</tr>";
+        thead.innerHTML = headerRow;
+
+        // 데이터 생성
+        jsonData.data.forEach(row => {
+            let tr = "<tr>";
+            row.forEach(cell => {
+                tr += `<td style="padding: 10px; border-bottom: 1px solid #eee;">${cell}</td>`;
+            });
+            tr += "</tr>";
+            tbody.innerHTML += tr;
+        });
+    }
+
+    // 파일 다운로드 헬퍼 함수
+    async function downloadFile(response, fileName) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+    }
+</script>
+{% endblock %}

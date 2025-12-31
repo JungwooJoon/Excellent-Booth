@@ -1,0 +1,102 @@
+/* static/css/style.css */
+
+:root {
+    --primary-color: #005eb8; /* DMU 파란색 계열 */
+    --bg-color: #f0f4f7;      /* 배경색 (연한 회색) */
+    --card-bg: #ffffff;       /* 카드 배경 */
+    --text-color: #333333;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Noto Sans KR', sans-serif; /* 한글 폰트 추천 */
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* 화면 전체 높이 사용 */
+}
+
+/* --- 헤더 (DMU) --- */
+header {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 15px 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* --- 메인 컨텐츠 (가운데 정렬) --- */
+main {
+    flex: 1; /* 남은 공간을 모두 차지하여 푸터를 아래로 밈 */
+    display: flex;
+    justify_content: center;
+    align_items: center; /* 수직 중앙 정렬 */
+    padding: 20px;
+}
+
+/* --- 카드 스타일 --- */
+.card {
+    background-color: var(--card-bg);
+    width: 100%;
+    max-width: 400px; /* 모바일~태블릿 적정 사이즈 */
+    border-radius: 20px;
+    padding: 40px 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1); /* 그림자 효과 */
+    text-align: center;
+}
+
+/* --- 마스코트 이미지 --- */
+.mascot-img {
+    width: 120px;
+    height: auto;
+    margin-bottom: 20px;
+}
+
+/* --- 텍스트 --- */
+.title {
+    color: var(--primary-color);
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 30px;
+}
+
+/* --- 버튼 그룹 --- */
+.btn-group {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* 버튼 사이 간격 */
+}
+
+.btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 15px;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    text-decoration: none; /* a태그일 경우 밑줄 제거 */
+    display: block;
+}
+
+.btn:hover {
+    background-color: #004a93; /* 호버 시 진한 색 */
+}
+
+/* --- 푸터 (Footer) --- */
+footer {
+    text-align: center;
+    padding: 20px;
+    color: #888;
+    font-size: 0.9rem;
+    margin-top: auto; /* 콘텐츠가 짧아도 바닥에 붙음 */
+}

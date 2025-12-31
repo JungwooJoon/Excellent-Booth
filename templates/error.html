@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <div style="font-size: 3rem; margin-bottom: 20px;">⚠️</div>
+    <h2 class="title" style="color: #e74c3c;">알림</h2>
+    <p style="margin-bottom: 30px; font-size: 1.1rem;">
+        {{ msg }}
+    </p>
+    
+    <a href="javascript:history.back()" class="btn" style="background-color: #999;">뒤로 가기</a>
+</div>
+{% endblock %}

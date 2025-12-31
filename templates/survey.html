@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block title %}만족도 조사{% endblock %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script>
+
+<style>
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 9999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        animation: fadeIn 0.2s ease-out;
+    }
+
+    /* 2. 하얀색 박스 */
+    .modal-box {
+        background: white;
+        padding: 30px 20px;
+        width: 80%;
+        max-width: 320px;
+        border-radius: 15px;
+        text-align: center;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        transform: scale(0.9);
+        animation: popUp 0.2s ease-out forwards;
+    }
+
+    /* 3. 아이콘 및 텍스트 스타일 */
+    .modal-icon i {
+        font-size: 40px;
+        color: #ff9800; /* 주황색 경고 느낌 */
+        margin-bottom: 15px;
+    }
+
+    .modal-box h3 {
+        margin: 0 0 10px 0;
+        color: #333;
+        font-size: 18px;
+    }
+
+    .modal-box p {
+        color: #666;
+        margin-bottom: 25px;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    /* 4. 확인 버튼 */
+    .modal-btn {
+        background-color: #333;
+        color: white;
+        border: none;
+        padding: 12px 0;
+        width: 100%;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background 0.2s;
+    }
+
+    .modal-btn:hover {
+        background-color: #555;
+    }
+
+    /* 애니메이션 효과 */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes popUp {
+        to {
+            transform: scale(1);
+        }
+    }
+
+    /* 별점 스타일 */
+    .star-container {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin: 20px 0;
+    }
+
+    .star {
+        font-size: 40px;
+        color: #ddd; /* 선택 안 된 색상 (회색) */
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+
+    .star.selected {
+        color: #f39c12; /* 선택된 색상 (노란색) */
+    }
+
+    .star:hover {
+        transform: scale(1.1);
+    }
+</style>
+
+<div class="card"
+     style="max-width: 500px; margin: 40px auto; padding: 30px; text-align: center; background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+
+    <h2 class="title" style="margin-bottom: 10px; color: #333;">
+        <span style="color: #005eb8;">{{ booth.name if booth else '부스' }}</span><br>
+        만족도 조사
+    </h2>
+
+    <p style="color: #666; margin-bottom: 30px;">이 부스의 체험은 어떠셨나요?</p>
+
+    <div class="star-container" id="starContainer">
+        <i class="fas fa-star star" onclick="setScore(1)"></i>
+        <i class="fas fa-star star" onclick="setScore(2)"></i>
+        <i class="fas fa-star star" onclick="setScore(3)"></i>
+        <i class="fas fa-star star" onclick="setScore(4)"></i>
+        <i class="fas fa-star star" onclick="setScore(5)"></i>
+    </div>
+
+    <p id="scoreText" style="font-weight: bold; color: #f39c12; height: 20px; margin-bottom: 20px;"></p>
+
+    <button type="button" class="btn" onclick="submitSurvey()"
+            style="width: 100%; padding: 15px; background-color: #005eb8; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer;">
+        제출하기
+    </button>
+
+    <div style="margin-top: 20px; font-size: 11px; color: #999; line-height: 1.4;">
+        * 공정한 운영을 위해 <strong>중복 참여 방지 시스템</strong>이 적용됩니다.<br>
+        (참여 기록 확인을 위해 익명의 기기 식별 정보가 활용될 수 있습니다)
+    </div>
+</div>
+<div id="customModal" class="modal-overlay" style="display: none;">
+    <div class="modal-box">
+        <div class="modal-icon">
+            <i class="fas fa-exclamation-circle"></i>
+        </div>
+        <h3 id="modalTitle">알림</h3>
+        <p id="modalMessage">내용이 여기에 들어갑니다.</p>
+        <button onclick="closeModal()" class="modal-btn">확인</button>
+    </div>
+</div>
+<script>
+    // 1. 전역 변수 설정
+    let visitorId = "unknown";
+    let currentScore = 0; // 현재 선택된 점수
+
+    // 2. FingerprintJS 초기화 (기기 식별)
+    const initFingerprint = async () => {
+        try {
+            const fp = await FingerprintJS.load();
+            const result = await fp.get();
+            visitorId = result.visitorId;
+            console.log("Device ID Loaded:", visitorId);
+        } catch (e) {
+            console.error("Fingerprint Error:", e);
+        }
+    };
+    initFingerprint();
+
+    // 3. 별점 선택 함수 (UI 업데이트)
+    function setScore(score) {
+        currentScore = score;
+        const stars = document.querySelectorAll('.star');
+
+        // 별 색상 채우기 로직
+        stars.forEach((star, index) => {
+            if (index < score) {
+                star.classList.add('selected'); // 노란색
+            } else {
+                star.classList.remove('selected'); // 회색
+            }
+        });
+
+        // 텍스트 업데이트
+        const scoreText = document.getElementById('scoreText');
+        scoreText.innerText = score + "점";
+    }
+
+    // 4. 제출 함수 (서버 전송)
+    async function submitSurvey() {
+        // 1. 유효성 검사
+        if (currentScore === 0) {
+            showModal("별점을 선택해주세요.");
+            return;
+        }
+
+        // 2. URL에서 부스 ID 추출
+        const pathSegments = window.location.pathname.split('/');
+        const boothId = pathSegments[pathSegments.length - 1] || pathSegments[pathSegments.length - 2];
+
+        try {
+            // 3. 서버로 데이터 전송
+            const response = await fetch('/booth/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    booth_id: boothId,
+                    score: currentScore,
+                    fingerprint: visitorId || "unknown"
+                })
+            });
+
+            // 4. 응답 처리
+            const result = await response.json();
+
+            if (result.status === 'success') {
+                window.location.href = "/booth/success";
+            } else {
+                showModal(result.msg || "이미 참여하셨거나 오류가 발생했습니다.");
+            }
+
+        } catch (error) {
+            console.error("Submission Error:", error);
+            alert("서버와 통신 중 오류가 발생했습니다.");
+        }
+    }
+
+    // 모달 열기 함수
+    function showModal(msg) {
+        document.getElementById('modalMessage').innerText = msg;
+        document.getElementById('customModal').style.display = 'flex';
+    }
+
+    // 모달 닫기 함수
+    function closeModal() {
+        document.getElementById('customModal').style.display = 'none';
+    }
+</script>
+{% endblock %}

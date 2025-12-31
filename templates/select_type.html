@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <img src="/static/images/nodle.png" alt="Mascot" class="mascot-img">
+    
+    <h2 class="title">당신의 신분을 선택해주세요</h2>
+
+    <div class="btn-group">
+        <a href="/booth/survey/{{ booth_id }}?user_type=재학생" class="btn">재학생</a>
+        <a href="/booth/survey/{{ booth_id }}?user_type=졸업생" class="btn">졸업생</a>
+        <a href="/booth/survey/{{ booth_id }}?user_type=교직원" class="btn">교직원</a>
+        <a href="/booth/survey/{{ booth_id }}?user_type=일반인" class="btn">일반인</a>
+    </div>
+</div>
+{% endblock %}

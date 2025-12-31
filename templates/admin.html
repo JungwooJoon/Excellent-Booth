@@ -1,0 +1,500 @@
+{% extends "base.html" %}
+
+{% block title %}관리자 대시보드{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+<style>
+    .admin-container {
+        width: 100%;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    /* 테이블 스타일 */
+    .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .admin-table th, .admin-table td {
+        padding: 15px;
+        text-align: center;
+        border-bottom: 1px solid #eee;
+        vertical-align: middle; /* 세로 중앙 정렬 */
+    }
+
+    .admin-table th {
+        background-color: #005eb8;
+        color: white;
+        font-weight: 600;
+    }
+
+    .qr-thumb {
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
+        border: 1px solid #eee;
+        background: white;
+        border-radius: 4px;
+        padding: 2px;
+    }
+
+    .form-inline {
+        display: flex;
+        gap: 10px;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+        align-items: center;
+    }
+
+    .input-text {
+        flex: 1;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 14px;
+    }
+
+    /* --- [수정된 스타일: 아이콘 버튼 그룹] --- */
+    .action-group {
+        display: flex;
+        gap: 8px; /* 아이콘 사이 간격 */
+        align-items: center;
+    }
+
+    /* 아이콘 버튼 공통 스타일 */
+    .icon-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%; /* 동그라미 모양 */
+        border: none;
+        background-color: transparent;
+        color: #777; /* 기본 회색 */
+        font-size: 16px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    /* 마우스 올렸을 때 효과 */
+    .icon-btn:hover {
+        background-color: #f0f0f0;
+        transform: scale(1.1); /* 살짝 커짐 */
+    }
+
+    /* 각 버튼별 호버 색상 */
+    .btn-edit:hover {
+        color: #28a745;
+        background-color: #e6f4ea;
+    }
+
+    /* 초록색 (수정) */
+    .btn-delete:hover {
+        color: #dc3545;
+        background-color: #fee2e2;
+    }
+
+    /* 빨간색 (삭제) */
+    .btn-view:hover {
+        color: #005eb8;
+        background-color: #e3f2fd;
+    }
+
+    /* 파란색 (체험) */
+
+    /* 폼 태그 내부의 버튼 스타일 초기화 */
+    .form-btn-reset {
+        background: none;
+        border: none;
+        padding: 0;
+        margin: 0;
+        font: inherit;
+        cursor: pointer;
+        outline: inherit;
+    }
+
+    .modal-overlay {
+        display: none; /* 평소에는 숨김 */
+        position: fixed;
+        z-index: 1000; /* 제일 위에 뜨게 */
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6); /* 배경 어둡게 */
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(3px); /* 배경 살짝 흐리게 */
+    }
+
+    .modal-box {
+        background-color: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        text-align: center;
+        position: relative;
+        max-width: 90%;
+        width: 400px;
+        animation: fadeIn 0.2s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .modal-close {
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        font-size: 24px;
+        color: #aaa;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+
+    .modal-close:hover {
+        color: #333;
+    }
+
+    .modal-qr-img {
+        width: 100%;
+        max-width: 300px;
+        height: auto;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        margin: 15px 0 25px 0;
+    }
+
+    .btn-download {
+        background-color: #005eb8;
+        color: white;
+        padding: 12px 25px;
+        border-radius: 30px;
+        text-decoration: none;
+        font-size: 16px;
+        font-weight: bold;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.2s;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-download:hover {
+        background-color: #004488;
+    }
+</style>
+
+<div class="admin-container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="color: #333; margin: 0;">축제 부스 현황</h2>
+    </div>
+
+    <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="margin: 0; color: #333;">관리자 메뉴</h3>
+
+        <div style="display: flex; gap: 10px;">
+            <a href="/booth/admin/export_excel"
+               style="background-color: #217346; color: white; text-decoration: none; padding: 12px 20px; border-radius: 5px; font-weight: bold; display: flex; align-items: center; gap: 5px;">
+                <i class="fas fa-file-excel"></i>
+            </a>
+
+            <form action="/booth/admin/reset_all" method="post"
+                  onsubmit="return confirm('모든 투표 데이터가 삭제됩니다. \n정말 초기화 하시겠습니까?');" style="margin:0;">
+                <button type="submit"
+                        style="background-color: #dc3545; color: white; border: none; padding: 12px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                    <i class="fas fa-solid fa-trash-can"></i>
+                </button>
+            </form>
+
+            <button onclick="openCreateModal()"
+                    style="background-color: #333; color: white; border: none; padding: 12px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                <i class="fas fa-plus"></i>
+            </button>
+        </div>
+    </div>
+
+    <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+            <tr style="border-bottom: 2px solid #eee; text-align: left;">
+                <th style="padding: 15px; color: #666;">QR</th>
+                <th style="padding: 15px; color: #666;">부스 이름</th>
+
+                <th style="padding: 15px; color: #666; width: 15%;">위치</th>
+                <th style="padding: 15px; color: #666; width: 25%;">설명</th>
+                <th style="padding: 15px; color: #666;">방문자</th>
+                <th style="padding: 15px; color: #666;">평점</th>
+                <th style="padding: 15px; color: #666;">관리</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for booth in booths %}
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 15px;">
+                    {% if booth.qr_image_path %}
+                    <div onclick="openModal('{{ booth.qr_image_path }}', '{{ booth.name }}')"
+                         style="cursor: pointer; display: inline-block;">
+                        <img src="{{ booth.qr_image_path }}" class="qr-thumb" title="크게 보기">
+                    </div>
+                    {% else %}
+                    <span style="font-size: 12px; color: #999;">No QR</span>
+                    {% endif %}
+                </td>
+
+                <td style="padding: 15px; font-weight: bold; color: #333;">
+                    {{ booth.name }}
+                </td>
+
+                <td style="padding: 15px; color: #555;">
+                    {% if booth.location %}
+                    <i class="fas fa-map-marker-alt" style="color: #e74c3c; margin-right: 5px;"></i>
+                    {{ booth.location }}
+                    {% else %}
+                    <span style="color: #ccc;">-</span>
+                    {% endif %}
+                </td>
+
+                <td style="padding: 15px; color: #666; font-size: 14px;">
+                    <div style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                         title="{{ booth.description }}">
+                        {{ booth.description or '' }}
+                    </div>
+                </td>
+
+                <td style="padding: 15px;">
+            <span style="background-color: #e3f2fd; color: #005eb8; padding: 5px 10px; border-radius: 15px; font-size: 13px; font-weight: bold;">
+                {{ booth.total_visits }}명
+            </span>
+                </td>
+
+                <td style="padding: 15px; font-weight: bold; color: #f39c12;">
+                    <i class="fas fa-star"></i> {{ "%.1f"|format(booth.avg_score) }}
+                </td>
+
+                <td style="padding: 15px;">
+                    <div style="display: flex; gap: 5px;">
+
+                        <a href="entry/{{ booth.booth_id }}" target="_blank"
+                           style="background-color: #e3f2fd; color: #005eb8; text-decoration: none; padding: 8px 12px; border-radius: 5px; display: inline-flex; align-items: center; justify-content: center;"
+                           title="사용자 화면 미리보기">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <button onclick="openEditModal('{{ booth.booth_id }}', '{{ booth.name }}', '{{ booth.location }}', '{{ booth.description }}')"
+                                style="background-color: #f0f0f0; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; color: #333;"
+                                title="수정">
+                            <i class="fas fa-edit"></i>
+                        </button>
+
+                        <form action="/booth/admin/delete/{{ booth.booth_id }}" method="post"
+                              onsubmit="return confirm('정말 삭제하시겠습니까?');" style="margin:0;">
+                            <button type="submit"
+                                    style="background-color: #ffebee; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; color: #c62828;"
+                                    title="삭제">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="editModal" class="modal-overlay" onclick="closeEditModal(event)">
+    <div class="modal-box" style="text-align: left; width: 500px;"><span class="modal-close"
+                                                                         onclick="closeEditModal(event, true)">&times;</span>
+
+        <h3 style="margin-top: 0; color: #333; text-align: center; margin-bottom: 20px;">
+            부스 정보 수정
+        </h3>
+
+        <form id="editForm" method="post">
+            <div style="margin-bottom: 15px;">
+                <label for="editName" style="display: block; font-weight: bold; margin-bottom: 5px;">부스 이름</label>
+                <input type="text" id="editName" name="name" required
+                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;">
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label for="editLocation" style="display: block; font-weight: bold; margin-bottom: 5px;">위치</label>
+                <input type="text" id="editLocation" name="location"
+                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;">
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label for="editDescription" style="display: block; font-weight: bold; margin-bottom: 5px;">설명</label>
+                <textarea id="editDescription" name="description" rows="4"
+                          style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; resize: vertical;"></textarea>
+            </div>
+
+            <div style="text-align: center;">
+                <button type="submit"
+                        style="background-color: #28a745; color: white; border: none; padding: 12px 30px; border-radius: 30px; font-weight: bold; cursor: pointer; font-size: 16px;">
+                    수정 완료
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="qrModal" class="modal-overlay" onclick="closeModal(event)">
+    <div class="modal-box">
+        <span class="modal-close" onclick="closeModal(event, true)">&times;</span>
+
+        <h3 id="modalBoothName" style="margin-top: 0; color: #333;">QR Code</h3>
+        <p style="color: #666; font-size: 14px; margin-bottom: 10px;">스캔하여 부스에 입장하세요</p>
+
+        <img id="modalQrImage" src="" class="modal-qr-img">
+
+        <div>
+            <a id="modalDownloadBtn" href="" download class="btn-download">
+                <i class="fas fa-download"></i> 이미지 저장
+            </a>
+        </div>
+    </div>
+</div>
+
+<div id="createModal" class="modal-overlay" onclick="closeCreateModal(event)">
+    <div class="modal-box" style="text-align: left; width: 500px;">
+        <span class="modal-close" onclick="closeCreateModal(event, true)">&times;</span>
+
+        <h3 style="margin-top: 0; color: #333; text-align: center; margin-bottom: 20px;">
+            새 부스 생성
+        </h3>
+
+        <form action="/booth/admin/create_booth" method="post">
+            <div style="margin-bottom: 15px;">
+                <label for="createName" style="display: block; font-weight: bold; margin-bottom: 5px;">부스 이름 <span
+                        style="color:red">*</span></label>
+                <input type="text" id="createName" name="name" required placeholder="예: 컴공과 주점"
+                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;">
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label for="createLocation" style="display: block; font-weight: bold; margin-bottom: 5px;">위치</label>
+                <input type="text" id="createLocation" name="location" placeholder="예: 운동장 본부석 옆"
+                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;">
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label for="createDescription" style="display: block; font-weight: bold; margin-bottom: 5px;">설명</label>
+                <textarea id="createDescription" name="description" rows="4" placeholder="부스에 대한 설명을 입력하세요"
+                          style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; resize: vertical;"></textarea>
+            </div>
+
+            <div style="text-align: center;">
+                <button type="submit"
+                        style="background-color: #333; color: white; border: none; padding: 12px 30px; border-radius: 30px; font-weight: bold; cursor: pointer; font-size: 16px;">
+                    생성하기
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openCreateModal() {
+        document.getElementById('createModal').style.display = 'flex';
+    }
+
+    // [생성 모달 닫기]
+    function closeCreateModal(event, forceClose = false) {
+        if (event.target === event.currentTarget || forceClose) {
+            document.getElementById('createModal').style.display = 'none';
+        }
+    }
+
+    function openModal(imagePath, boothName) {
+        const modal = document.getElementById('qrModal');
+        const modalImg = document.getElementById('modalQrImage');
+        const modalBtn = document.getElementById('modalDownloadBtn');
+        const modalTitle = document.getElementById('modalBoothName');
+
+        // 데이터 채워넣기
+        modalImg.src = imagePath;
+        modalTitle.innerText = boothName;
+
+        // 다운로드 링크 설정
+        modalBtn.href = imagePath;
+        modalBtn.download = `QR_${boothName}.png`; // 다운로드될 파일명
+
+        // 모달 보여주기 (Flex)
+        modal.style.display = 'flex';
+    }
+
+    // 2. 모달 닫기
+    function closeModal(event, forceClose = false) {
+        // 배경(overlay)을 클릭했거나, X버튼(forceClose)을 눌렀을 때만 닫힘
+        if (event.target === event.currentTarget || forceClose) {
+            document.getElementById('qrModal').style.display = 'none';
+        }
+    }
+
+    // ESC 키 누르면 닫기 (사용자 편의)
+    document.addEventListener('keydown', function (event) {
+        if (event.key === "Escape") {
+            document.getElementById('qrModal').style.display = 'none';
+        }
+    });
+
+    function openEditModal(btn) {
+        const modal = document.getElementById('editModal');
+        const form = document.getElementById('editForm');
+
+        // 1. 버튼의 data- 속성에서 값 가져오기
+        const id = btn.getAttribute('data-id');
+        const name = btn.getAttribute('data-name');
+        const location = btn.getAttribute('data-location');
+        const description = btn.getAttribute('data-description');
+
+        // 2. 폼의 Action URL을 해당 부스 ID에 맞게 수정
+        // 예: /admin/update/abcdef-1234...
+        form.action = `/booth/admin/update/${id}`;
+
+        // 3. 인풋 창에 기존 값 채워넣기
+        document.getElementById('editName').value = name;
+        document.getElementById('editLocation').value = location;
+        document.getElementById('editDescription').value = description;
+
+        // 4. 모달 보여주기
+        modal.style.display = 'flex';
+    }
+
+    // [수정 모달 닫기]
+    function closeEditModal(event, forceClose = false) {
+        if (event.target === event.currentTarget || forceClose) {
+            document.getElementById('editModal').style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}
