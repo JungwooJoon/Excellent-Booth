@@ -49,8 +49,8 @@ app.include_router(admin.router)
 app.include_router(analysis.router)
 
 # --- [정적 파일 및 템플릿 설정] ---
-# /static 경로로 들어오는 요청은 static 폴더의 파일을 보여줌
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# /booth/static 경로로 들어오는 요청은 static 폴더의 파일을 보여줌
+app.mount("/booth/static", StaticFiles(directory="static"), name="static")
 
 # templates 폴더를 Jinja2 템플릿 경로로 지정
 templates = Jinja2Templates(directory="templates")
