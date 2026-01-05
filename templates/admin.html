@@ -467,15 +467,9 @@
         }
     });
 
-    function openEditModal(btn) {
+    function openEditModal(id, name, location, description) {
         const modal = document.getElementById('editModal');
         const form = document.getElementById('editForm');
-
-        // 1. 버튼의 data- 속성에서 값 가져오기
-        const id = btn.getAttribute('data-id');
-        const name = btn.getAttribute('data-name');
-        const location = btn.getAttribute('data-location');
-        const description = btn.getAttribute('data-description');
 
         // 2. 폼의 Action URL을 해당 부스 ID에 맞게 수정
         // 예: /admin/update/abcdef-1234...

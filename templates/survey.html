@@ -1,10 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}만족도 조사{% endblock %}
-
-{% block content %}
-<script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script>
-
+{% block head %}
 <style>
     .modal-overlay {
         position: fixed;
@@ -110,6 +107,10 @@
         transform: scale(1.1);
     }
 </style>
+{% endblock %}
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script>
+
 
 <div class="card"
      style="max-width: 500px; margin: 40px auto; padding: 30px; text-align: center; background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
